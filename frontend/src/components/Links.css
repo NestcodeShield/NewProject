@@ -1,0 +1,72 @@
+.Links {
+  display: flex;
+  flex-direction: row;
+  height: auto;
+  width: 100%;
+  background-color: rgb(37, 37, 37);
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  width: 1400px;
+  justify-content: space-between;
+  padding: 4px;
+}
+
+ul {
+  display: flex;
+  flex-direction: row;
+  list-style: none;
+  gap: 10px;
+  margin: 0;
+  height: 100%;
+  padding: 10px 0;
+}
+
+li {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  flex-direction: row;
+}
+
+.log {
+  border: none;
+  cursor: pointer;
+  background:none;
+  color: white;
+  transition-duration: 0.3s;
+  font-size: 15px;
+  padding: 0;
+}
+
+.log:hover {
+  color: rgb(23, 181, 248);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  width: auto;
+}
+
+.announcement {
+  background-color:  rgb(0, 160, 228);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+}
+
+.announcement a {
+  color: white;
+  text-decoration: none;
+}
