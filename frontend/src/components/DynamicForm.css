@@ -1,0 +1,18 @@
+.DynamicForm {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  margin-top:120px;
+  color: black;
+}
+
+.DynamicForm div {
+  width: 500px;
+}
+
+.DynamicForm label {
+  width: 500px;
+}

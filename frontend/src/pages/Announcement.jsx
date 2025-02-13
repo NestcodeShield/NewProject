@@ -2,14 +2,16 @@ import { useState } from 'react'
 import './Announcement.css'
 import Header from "../components/Header";
 import Breadcrumbs from '../components/Breadcrumbs';
+import DynamicForm from '../components/DynamicForm'
 
 function Announcement() {
 
   return (
     <>
       <div className="Announcement">
-        <Breadcrumbs />
         <Header />
+        <Breadcrumbs />
+        <DynamicForm />
       </div>
     </>
   )

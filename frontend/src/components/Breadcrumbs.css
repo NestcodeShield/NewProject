@@ -1,0 +1,25 @@
+.Breadcrumbs {
+  display: flex;
+  position: relative;
+  top: 120px;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  width: 100%;
+}
+
+.Breadcrumbs a{
+   font-size: 10px;
+   color: gray;
+   text-decoration: none;
+}
+
+.Breadcrumbs li{
+  color: gray;
+  margin: 0;
+  gap: 3px;
+}
+
+.Breadcrumbs p {
+  color: black;
+}
