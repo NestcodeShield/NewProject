@@ -1,128 +1,229 @@
-import { useState } from "react";
-import "./DynamicForm.css"
-
-const categoryOptions = {
-  "Квартира": {
-    "Сдам": ["Количество комнат", "Цена аренды в месяц"],
-    "Продам": ["Количество комнат", "Цена продажи"]
-  },
-  "Авто": {
-    "Продам": ["Марка", "Год выпуска", "Цена"],
-    "Сдам в аренду": ["Марка", "Цена за день", "Состояние"]
-  },
-  "Электроника": {
-    "Смартфоны": ["Бренд", "Состояние", "Цена"],
-    "Ноутбуки": ["Бренд", "Оперативная память", "Цена", "Состояние"]
-  }
-};
+import React, { useState } from "react";
+import "./DynamicForm.css";
 
 function DynamicForm() {
-  const [title, setTitle] = useState(""); // Заголовок объявления
   const [category, setCategory] = useState("");
-  const [subCategory, setSubCategory] = useState("");
-  const [fields, setFields] = useState([]);
-  const [description, setDescription] = useState(""); // Описание объявления
-  const [condition, setCondition] = useState(""); // Состояние (Новый / БУ)
+  const [subcategory, setSubcategory] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [error, setError] = useState({});
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [socialLink, setSocialLink] = useState(""); // Объединённое поле для социальных сетей
+  const [images, setImages] = useState([]);
+  const [selectedDuration, setSelectedDuration] = useState("");
+  const [price, setPrice] = useState("");
+  const [rooms, setRooms] = useState(""); // Количество комнат
+  const [location, setLocation] = useState(""); // Населённый пункт
 
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
-    setSubCategory("");
-    setFields([]);
-    setCondition("");
+    setSubcategory(""); // Сбрасываем подкатегорию при смене категории
   };
 
-  const handleSubCategoryChange = (e) => {
-    setSubCategory(e.target.value);
-    setFields(categoryOptions[category][e.target.value] || []);
-    setCondition("");
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length + images.length <= 5) {
+      setImages([...images, ...files]);
+    } else {
+      alert("Вы можете загрузить не более 5 фото.");
+    }
+  };
+
+  const removeImage = (index) => {
+    const updatedImages = images.filter((_, i) => i !== index);
+    setImages(updatedImages);
+  };
+
+  const validateForm = () => {
+    const errors = {};
+
+    if (!category) errors.category = "Пожалуйста, выберите категорию.";
+    if (!title) errors.title = "Пожалуйста, укажите заголовок.";
+    if (!description) errors.description = "Пожалуйста, укажите описание.";
+    if (!phoneNumber) errors.phoneNumber = "Пожалуйста, укажите номер телефона.";
+    if (!socialLink) errors.socialLink = "Пожалуйста, укажите ссылку на соц.сеть.";
+    if (!selectedDuration) errors.selectedDuration = "Пожалуйста, выберите время действия объявления.";
+    if (!location) errors.location = "Пожалуйста, укажите населённый пункт.";
+
+    if (category !== "furniture" && !price) {
+      errors.price = "Пожалуйста, укажите цену.";
+    }
+
+    if (category === "real-estate" && subcategory === "rent" && !rooms) {
+      errors.rooms = "Пожалуйста, укажите количество комнат.";
+    }
+
+    return errors;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const errors = validateForm();
+    setError(errors);
+
+    if (Object.keys(errors).length === 0) {
+      // Логика отправки формы
+      alert("Объявление опубликовано!");
+    } else {
+      alert("Пожалуйста, заполните все обязательные поля.");
+    }
   };
 
   return (
-    <div className="DynamicForm">
-      <h2>Создание объявления</h2>
+    <div className="dynamic-form-container">
+      <form className="dynamic-form" onSubmit={handleSubmit}>
+        {/* Заголовок */}
+        <input
+          className="dynamic-input"
+          type="text"
+          placeholder="Введите заголовок"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        {error.title && <div className="dynamic-error">{error.title}</div>}
 
-      {/* Поле заголовка */}
-      <label>Заголовок объявления:</label>
-      <input 
-        type="text" 
-        value={title} 
-        onChange={(e) => setTitle(e.target.value)} 
-        placeholder="Введите заголовок" 
-      />
+        {/* Категория */}
+        <select
+          className="dynamic-select"
+          value={category}
+          onChange={handleCategoryChange}
+        >
+          <option value="">Выберите категорию</option>
+          <option value="real-estate">Недвижимость</option>
+          <option value="cars">Автомобили</option>
+          <option value="electronics">Электроника</option>
+          <option value="furniture">Мебель</option>
+          <option value="other">Другие товары</option>
+        </select>
+        {error.category && <div className="dynamic-error">{error.category}</div>}
 
-      {/* Выбор категории */}
-      <label>Категория:</label>
-      <select value={category} onChange={handleCategoryChange}>
-        <option value="">Выберите категорию</option>
-        {Object.keys(categoryOptions).map((cat) => (
-          <option key={cat} value={cat}>{cat}</option>
-        ))}
-      </select>
-
-      {/* Выбор подкатегории */}
-      {category && (
-        <>
-          <label>Подкатегория:</label>
-          <select value={subCategory} onChange={handleSubCategoryChange}>
+        {/* Подкатегория */}
+        {category && category !== "furniture" && category !== "cars" && category !== "real-estate" && (
+          <select
+            className="dynamic-select"
+            value={subcategory}
+            onChange={(e) => setSubcategory(e.target.value)}
+          >
             <option value="">Выберите подкатегорию</option>
-            {Object.keys(categoryOptions[category]).map((sub) => (
-              <option key={sub} value={sub}>{sub}</option>
-            ))}
+            <option value="other">Другое</option>
           </select>
-        </>
-      )}
+        )}
+        {category === "real-estate" && (
+          <select
+            className="dynamic-select"
+            value={subcategory}
+            onChange={(e) => setSubcategory(e.target.value)}
+          >
+            <option value="">Выберите подкатегорию</option>
+            <option value="rent">Аренда</option>
+            <option value="sale">Продажа</option>
+          </select>
+        )}
 
-      {/* Динамические поля */}
-      {fields.length > 0 && (
-        <div>
-          <h3>Дополнительные параметры</h3>
-          {fields.map((field, index) => (
-            <div key={index}>
-              <label>{field}:</label>
+        {/* Описание */}
+        <textarea
+          className="dynamic-textarea"
+          placeholder="Введите описание"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        {error.description && <div className="dynamic-error">{error.description}</div>}
 
-              {/* Радиокнопки для "Состояние" */}
-              {field === "Состояние" ? (
-                <div>
-                  <label>
-                    <input 
-                      type="radio" 
-                      name="condition" 
-                      value="Новый" 
-                      checked={condition === "Новый"} 
-                      onChange={(e) => setCondition(e.target.value)}
-                    /> Новый
-                  </label>
+        {/* Время действия объявления */}
+        <select
+          className="dynamic-select"
+          value={selectedDuration}
+          onChange={(e) => setSelectedDuration(e.target.value)}
+        >
+          <option value="">Выберите время действия объявления</option>
+          <option value="7">7 дней</option>
+          <option value="14">14 дней</option>
+          <option value="30">30 дней</option>
+        </select>
+        {error.selectedDuration && <div className="dynamic-error">{error.selectedDuration}</div>}
 
-                  <label>
-                    <input 
-                      type="radio" 
-                      name="condition" 
-                      value="БУ" 
-                      checked={condition === "БУ"} 
-                      onChange={(e) => setCondition(e.target.value)}
-                    /> БУ
-                  </label>
-                </div>
-              ) : (
-                <input type="text" placeholder={field} />
-              )}
+        {/* Цена */}
+        <input
+          className="dynamic-input"
+          type="number"
+          placeholder="Введите цену"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+        />
+        <span className="currency-label">€</span>
+        {error.price && <div className="dynamic-error">{error.price}</div>}
+
+        {/* Количество комнат (для недвижимости) */}
+        {category === "real-estate" && subcategory === "rent" && (
+          <>
+            <input
+              className="dynamic-input"
+              type="number"
+              placeholder="Количество комнат"
+              value={rooms}
+              onChange={(e) => setRooms(e.target.value)}
+            />
+            {error.rooms && <div className="dynamic-error">{error.rooms}</div>}
+          </>
+        )}
+
+        {/* Ссылка на соц. сети */}
+        <input
+          className="dynamic-input"
+          type="text"
+          placeholder="Ссылка на Instagram, Telegram или Facebook"
+          value={socialLink}
+          onChange={(e) => setSocialLink(e.target.value)}
+        />
+        {error.socialLink && <div className="dynamic-error">{error.socialLink}</div>}
+
+        {/* Населённый пункт */}
+        <input
+          className="dynamic-input"
+          type="text"
+          placeholder="Населённый пункт"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+        />
+        {error.location && <div className="dynamic-error">{error.location}</div>}
+
+        {/* Телефон */}
+        <input
+          className="dynamic-input"
+          type="text"
+          placeholder="Номер телефона"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+        />
+        {error.phoneNumber && <div className="dynamic-error">{error.phoneNumber}</div>}
+
+        {/* Фото */}
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleImageChange}
+        />
+        <div className="dynamic-image-preview">
+          {images.map((image, index) => (
+            <div key={index} className="image-preview">
+              <img src={URL.createObjectURL(image)} alt="preview" />
+              <button
+                type="button"
+                className="remove-image-btn"
+                onClick={() => removeImage(index)}
+              >
+                &#10005;
+              </button>
             </div>
           ))}
         </div>
-      )}
 
-      {/* Поле для описания */}
-      {subCategory && (
-        <>
-          <label>Описание объявления:</label>
-          <textarea 
-            value={description} 
-            onChange={(e) => setDescription(e.target.value)} 
-            placeholder="Введите описание..." 
-            rows="4"
-          />
-        </>
-      )}
+        {/* Кнопка отправки */}
+        <button className="dynamic-button" type="submit">
+          Опубликовать объявление
+        </button>
+      </form>
     </div>
   );
 }

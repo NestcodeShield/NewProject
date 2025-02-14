@@ -1,18 +1,72 @@
-.DynamicForm {
+.dynamic-form-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #f9f9f9;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  gap: 20px;
-  position: relative;
-  margin-top:120px;
-  color: black;
 }
 
-.DynamicForm div {
-  width: 500px;
+.dynamic-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.DynamicForm label {
-  width: 500px;
+.dynamic-input,
+.dynamic-select,
+.dynamic-textarea {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.dynamic-textarea {
+  height: 100px;
+  resize: none;
+}
+
+.dynamic-button {
+  width: calc(100% - 20px);
+  padding: 10px;
+  background: blue;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.dynamic-button:hover {
+  background: darkblue;
+}
+
+.dynamic-error {
+  color: red;
+  font-size: 14px;
+  margin-top: -8px;
+  width: 100%;
+  text-align: left;
+}
+
+.dynamic-image-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.dynamic-image-preview img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 5px;
 }
