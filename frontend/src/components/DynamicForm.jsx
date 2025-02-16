@@ -14,6 +14,9 @@ function DynamicForm() {
   const [price, setPrice] = useState("");
   const [rooms, setRooms] = useState(""); // Количество комнат
   const [location, setLocation] = useState(""); // Населённый пункт
+  const cities = ["Подгорица", "Будва", "Котор", "Бар", "Тиват", "Никшич"]; // Добавь сюда нужные города
+
+
 
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
@@ -36,41 +39,67 @@ function DynamicForm() {
 
   const validateForm = () => {
     const errors = {};
-
+  
     if (!category) errors.category = "Пожалуйста, выберите категорию.";
     if (!title) errors.title = "Пожалуйста, укажите заголовок.";
     if (!description) errors.description = "Пожалуйста, укажите описание.";
-    if (!phoneNumber) errors.phoneNumber = "Пожалуйста, укажите номер телефона.";
-    if (!socialLink) errors.socialLink = "Пожалуйста, укажите ссылку на соц.сеть.";
     if (!selectedDuration) errors.selectedDuration = "Пожалуйста, выберите время действия объявления.";
     if (!location) errors.location = "Пожалуйста, укажите населённый пункт.";
-
+  
     if (category !== "furniture" && !price) {
       errors.price = "Пожалуйста, укажите цену.";
     }
-
+  
     if (category === "real-estate" && subcategory === "rent" && !rooms) {
       errors.rooms = "Пожалуйста, укажите количество комнат.";
     }
-
+  
     return errors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errors = validateForm();
     setError(errors);
-
+  
     if (Object.keys(errors).length === 0) {
-      // Логика отправки формы
-      alert("Объявление опубликовано!");
+      try {
+        const response = await fetch("http://localhost:5000/api/ads", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            category,
+            subcategory,
+            title,
+            description,
+            price,
+            rooms,
+            location,
+            duration: selectedDuration,
+            images: [], // Заглушка для изображений
+          }),
+        });
+  
+        if (response.ok) {
+          alert("✅ Объявление опубликовано!");
+        } else {
+          alert("❌ Ошибка при отправке данных");
+        }
+      } catch (error) {
+        console.error("Ошибка запроса:", error);
+        alert("❌ Ошибка соединения с сервером");
+      }
     } else {
-      alert("Пожалуйста, заполните все обязательные поля.");
+      alert("⚠️ Пожалуйста, заполните все обязательные поля.");
     }
   };
+  
 
   return (
     <div className="dynamic-form-container">
+      <h2>Создание объявления</h2>
       <form className="dynamic-form" onSubmit={handleSubmit}>
         {/* Заголовок */}
         <input
@@ -148,7 +177,12 @@ function DynamicForm() {
           type="number"
           placeholder="Введите цену"
           value={price}
-          onChange={(e) => setPrice(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value >= 0) {
+              setPrice(value);
+            }
+          }}
         />
         <span className="currency-label">€</span>
         {error.price && <div className="dynamic-error">{error.price}</div>}
@@ -178,13 +212,18 @@ function DynamicForm() {
         {error.socialLink && <div className="dynamic-error">{error.socialLink}</div>}
 
         {/* Населённый пункт */}
-        <input
-          className="dynamic-input"
-          type="text"
-          placeholder="Населённый пункт"
+        <select
+          className="dynamic-select"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-        />
+        >
+          <option value="">Выберите населённый пункт</option>
+          {cities.map((city, index) => (
+            <option key={index} value={city}>
+              {city}
+            </option>
+          ))}
+        </select>
         {error.location && <div className="dynamic-error">{error.location}</div>}
 
         {/* Телефон */}

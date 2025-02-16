@@ -8,6 +8,7 @@ function Home() {
     <>
       <div className="Home">
         <Header />
+        <AdsList />
       </div>
     </>
   )
