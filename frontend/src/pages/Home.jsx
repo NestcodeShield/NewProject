@@ -1,17 +1,18 @@
-import { useState } from 'react'
-import './Home.css'
+// src/pages/Home.jsx
+import React from "react";
+import AdsList from "../components/AdsList";
 import Header from "../components/Header";
 
-function Home() {
-
+const Home = () => {
   return (
-    <>
-      <div className="Home">
-        <Header />
-        <AdsList />
-      </div>
-    </>
-  )
-}
+    <div className="Home">
+      <Header />
+      <h1>Объявления</h1>
+      
+      {/* Вставляем компонент с объявлениями */}
+      <AdsList />
+    </div>
+  );
+};
 
-export default Home
+export default Home;

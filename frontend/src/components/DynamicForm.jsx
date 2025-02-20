@@ -22,15 +22,27 @@ function DynamicForm() {
     setCategory(e.target.value);
     setSubcategory(""); // Сбрасываем подкатегорию при смене категории
   };
-
+  
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    if (files.length + images.length <= 5) {
-      setImages([...images, ...files]);
+    const maxSize = 5 * 1024 * 1024; // Максимальный размер 5MB
+  
+    // Проверяем каждый файл на размер
+    const validFiles = files.filter((file) => {
+      if (file.size > maxSize) {
+        alert(`Файл ${file.name} слишком большой! Максимальный размер — 5MB.`);
+        return false; // Не добавляем файл, если он слишком большой
+      }
+      return true;
+    });
+  
+    if (validFiles.length + images.length <= 5) {
+      setImages([...images, ...validFiles]);
     } else {
       alert("Вы можете загрузить не более 5 фото.");
     }
   };
+  
 
   const removeImage = (index) => {
     const updatedImages = images.filter((_, i) => i !== index);
@@ -59,27 +71,35 @@ function DynamicForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     const errors = validateForm();
     setError(errors);
   
     if (Object.keys(errors).length === 0) {
+      const formData = new FormData();
+      
+      // Добавляем обычные поля
+      formData.append("category", category);
+      formData.append("subcategory", subcategory);
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("price", price);
+      formData.append("rooms", rooms);
+      formData.append("location", location);
+      formData.append("duration", selectedDuration);
+      
+      // Добавляем изображения
+      images.forEach((image) => {
+        formData.append("images", image); // Здесь добавляем каждое изображение
+      });
+  
       try {
         const response = await fetch("http://localhost:5000/api/ads", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Accept": "application/json", // Указываем что ожидаем JSON в ответе
           },
-          body: JSON.stringify({
-            category,
-            subcategory,
-            title,
-            description,
-            price,
-            rooms,
-            location,
-            duration: selectedDuration,
-            images: [], // Заглушка для изображений
-          }),
+          body: formData, // Отправляем данные через FormData
         });
   
         if (response.ok) {
