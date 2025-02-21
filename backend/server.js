@@ -109,6 +109,23 @@ app.get("/api/ads", async (req, res) => {
   }
 });
 
+// Пример серверного маршрута
+app.get('/api/ads/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log("ID объявления:", id); // Логирование
+  try {
+    // Пытаться найти объявление по ID в базе данных
+    const ad = await Ad.findById(id);
+    if (!ad) {
+      return res.status(404).json({ message: 'Объявление не найдено' });
+    }
+    res.json(ad); // Если объявление найдено, отправляем его
+  } catch (error) {
+    console.error('Ошибка при получении объявления:', error);
+    res.status(500).json({ message: 'Ошибка сервера' });
+  }
+});
+
 
 // Запуск сервера
 const PORT = process.env.PORT || 5000;

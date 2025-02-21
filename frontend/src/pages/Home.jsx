@@ -8,7 +8,6 @@ const Home = () => {
     <div className="Home">
       <Header />
       <h1>Объявления</h1>
-      
       {/* Вставляем компонент с объявлениями */}
       <AdsList />
     </div>
