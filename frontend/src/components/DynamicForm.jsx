@@ -17,6 +17,8 @@ function DynamicForm() {
   const cities = ["Подгорица", "Будва", "Котор", "Бар", "Тиват", "Никшич"]; // Добавь сюда нужные города
 
 
+  
+
 
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
@@ -71,39 +73,40 @@ function DynamicForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+  
     const errors = validateForm();
     setError(errors);
   
     if (Object.keys(errors).length === 0) {
       const formData = new FormData();
-      
+  
       // Добавляем обычные поля
       formData.append("category", category);
       formData.append("subcategory", subcategory);
       formData.append("title", title);
       formData.append("description", description);
-      formData.append("price", price);
-      formData.append("rooms", rooms);
+      formData.append("price", price); // Отправляем цену как строку, но сервер будет конвертировать её в число
+      formData.append("rooms", rooms); // Также передаем количество комнат
       formData.append("location", location);
       formData.append("duration", selectedDuration);
-      
+  
       // Добавляем изображения
       images.forEach((image) => {
-        formData.append("images", image); // Здесь добавляем каждое изображение
+        formData.append("images", image);
       });
   
       try {
         const response = await fetch("http://localhost:5000/api/ads", {
           method: "POST",
           headers: {
-            "Accept": "application/json", // Указываем что ожидаем JSON в ответе
+            "Accept": "application/json",
           },
           body: formData, // Отправляем данные через FormData
         });
   
         if (response.ok) {
-          alert("✅ Объявление опубликовано!");
+          const result = await response.json();
+          alert("✅ Объявление опубликовано! ID: " + result.ad._id); // Показываем ID
         } else {
           alert("❌ Ошибка при отправке данных");
         }
