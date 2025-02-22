@@ -1,4 +1,4 @@
-import express from "express";
+import express from "express"; 
 import mongoose from "mongoose";
 import multer from "multer";
 import cors from "cors";
@@ -8,9 +8,9 @@ dotenv.config();
 
 const app = express(); // Создаем экземпляр Express
 
-
+// Разрешаем доступ с фронтенда
 app.use(cors({
-  origin: 'http://localhost:5173',  // Разрешаем доступ с фронтенда
+  origin: 'http://localhost:5173', 
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -18,10 +18,10 @@ app.use(cors({
 // Статическое обслуживание изображений
 app.use("/images", express.static("public/images"));
 
-// Настройка Multer для сохранения файлов в папку public/images
+// Настройка Multer для сохранения файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/images"); // Указываем папку для хранения изображений
+    cb(null, "public/images"); 
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + "-" + file.originalname); // Имя файла
@@ -49,41 +49,38 @@ const AdSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-// ID автоматически добавляется с помощью _id от MongoDB
 const Ad = mongoose.model("Ad", AdSchema);
-
 
 // Маршрут для добавления объявления с изображениями
 app.post("/api/ads", upload.array("images", 10), async (req, res) => {
   try {
-    // Проверяем, что изображения были загружены
+    // Проверка наличия файлов
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: "Не загружены файлы!" });
     }
 
-    // Преобразуем данные формы в корректный формат
     const { category, subcategory, title, description, price, rooms, location, duration } = req.body;
     
-    // Обрабатываем пути к изображениям
+    // Преобразование пути изображений
     const imagePaths = req.files.map(file => `/images/${file.filename}`);
 
-    // Создаем новое объявление
+    // Создание объявления
     const newAd = new Ad({
       category,
       subcategory,
       title,
       description,
-      price: parseFloat(price),  // Преобразуем цену в число
-      rooms: rooms ? parseInt(rooms, 10) : undefined,  // Преобразуем количество комнат, если оно есть
+      price: parseFloat(price), // Преобразование цены
+      rooms: rooms ? parseInt(rooms, 10) : undefined, // Преобразование количества комнат
       location,
       duration,
       images: imagePaths,
     });
 
-    // Сохраняем объявление в базе
+    // Сохранение объявления в базе данных
     await newAd.save();
     
-    // Отправляем ответ с добавленным объявлением
+    // Отправка ответа
     res.status(201).json({
       message: "✅ Объявление добавлено!",
       ad: newAd, // Возвращаем объявление с ID
@@ -93,7 +90,6 @@ app.post("/api/ads", upload.array("images", 10), async (req, res) => {
     res.status(500).json({ error: "Ошибка при добавлении объявления", message: error.message });
   }
 });
-
 
 // Маршрут для получения всех объявлений
 app.get("/api/ads", async (req, res) => {
@@ -109,23 +105,20 @@ app.get("/api/ads", async (req, res) => {
   }
 });
 
-// Пример серверного маршрута
+// Пример маршрута для получения объявления по ID
 app.get('/api/ads/:id', async (req, res) => {
   const { id } = req.params;
-  console.log("ID объявления:", id); // Логирование
   try {
-    // Пытаться найти объявление по ID в базе данных
     const ad = await Ad.findById(id);
     if (!ad) {
       return res.status(404).json({ message: 'Объявление не найдено' });
     }
-    res.json(ad); // Если объявление найдено, отправляем его
+    res.json(ad);
   } catch (error) {
     console.error('Ошибка при получении объявления:', error);
     res.status(500).json({ message: 'Ошибка сервера' });
   }
 });
-
 
 // Запуск сервера
 const PORT = process.env.PORT || 5000;

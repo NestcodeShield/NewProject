@@ -1,50 +1,76 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "./AdsList.css";
 
 const AdsList = () => {
-  const [ads, setAds] = useState([]); // Инициализируем с пустым массивом
+  const [ads, setAds] = useState([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchAds = async () => {
       try {
         const response = await axios.get("/api/ads");
-        console.log(response.data); // Для проверки получаемых данных
         setAds(response.data);
-        localStorage.setItem("ads", JSON.stringify(response.data)); 
+        localStorage.setItem("ads", JSON.stringify(response.data));
       } catch (error) {
         console.error("Ошибка загрузки объявлений:", error);
         alert("Ошибка при загрузке объявлений, пожалуйста, попробуйте позже.");
       }
     };
-  
-    fetchAds(); // Выполняем загрузку данных при монтировании компонента
+
+    fetchAds();
   }, []);
-  
 
   return (
     <div className="Ads-container">
       {ads.length === 0 ? (
-        <p>🔍 Объявлений пока нет.</p>
+        <p>Объявлений пока нет.</p>
       ) : (
         <ul className="ads-list">
           {ads.map((ad) => (
             <li key={ad._id} className="ad-card">
-              {ad.images && ad.images.length > 0 && (
-                <img
-                  src={`http://localhost:5000${ad.images[0]}`}
-                  alt="Объявление"
-                  width="150"
-                />
-              )}
-              <h2>{ad.title}</h2>
+              {ad.images && ad.images.length > 0 && <ImageSlider images={ad.images} />}
+              <h2>
+                <Link to={`/ad/${ad._id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                  {ad.title}
+                </Link>
+              </h2>
               <p>{ad.location}</p>
               <p className="price">{ad.price} €</p>
-              <Link to={`/ad/${ad._id}`}>Подробнее</Link>
             </li>
           ))}
         </ul>
+      )}
+    </div>
+  );
+};
+
+// Компонент слайдера с индикаторами, которые появляются только при наведении на фото
+const ImageSlider = ({ images }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div
+      className="image-slider"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <img
+        src={`http://localhost:5000${images[currentIndex]}`}
+        alt="Объявление"
+        className="slider-image"
+      />
+      {isHovered && (
+        <div className="indicator-container">
+          {images.map((_, index) => (
+            <div
+              key={index}
+              className={`indicator ${index === currentIndex ? "active" : ""}`}
+              onMouseEnter={() => setCurrentIndex(index)}
+            />
+          ))}
+        </div>
       )}
     </div>
   );

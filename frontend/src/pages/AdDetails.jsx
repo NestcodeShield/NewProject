@@ -11,6 +11,14 @@ const AdDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const categoryTranslations = {
+    "real-estate": "Недвижимость",
+    "cars": "Автомобили",
+    "electronics": "Электроника",
+    "furniture": "Мебель",
+    "other": "Другие товары",
+  };
+
   useEffect(() => {
     console.log("Запрашиваем ID объявления:", id); // Логируем ID для отладки
     const fetchAd = async () => {
@@ -48,7 +56,7 @@ const AdDetails = () => {
         )}
       </div>
       <h1>{ad.title || 'Нет информации о названии'}</h1>
-      <p><strong>Категория:</strong> {ad.category || 'Не указана'}</p>
+      <p><strong>Категория:</strong> {categoryTranslations[ad.category] || "Не указана"}</p>
       <p><strong>Описание:</strong> {ad.description || 'Нет описания'}</p>
       <p><strong>Цена:</strong> {ad.price ? `${ad.price} €` : 'Цена не указана'}</p>
       <p><strong>Город:</strong> {ad.location || 'Город не указан'}</p>

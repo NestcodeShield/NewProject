@@ -2,7 +2,7 @@
 .Ads-container {
   display: flex;
   position: relative;
-  top: 200px;
+  top: 80px;
   justify-content: center;
 }
 
@@ -27,12 +27,18 @@
   align-items: flex-start;
   padding-bottom: 10px;
   max-width: 300px;
+  cursor: default;
 }
 
 .ad-card h2 {
   color: royalblue;
   margin-top: 10px;
   padding: 5px 10px;
+
+}
+
+.ad-card h2:hover {
+  color: rgb(104, 136, 232);
 }
 
 .ad-card p {
@@ -42,7 +48,8 @@
 }
 
 .ad-card img {
-  width: 100%;
+  width: 250px;
+  height: 250px;
   border: 2px rgb(68, 68, 68);
 }
 
@@ -55,4 +62,59 @@
 
 .price {
   font-weight: bold;
+}
+
+.image-slider {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slider-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.indicator-container {
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  gap: 5px;
+}
+
+.indicator {
+  width: 35px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.5);
+  transition: background-color 0.3s ease-in-out;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Увеличенная невидимая зона активации */
+.indicator::before {
+  content: "";
+  position: absolute;
+  top: -15px;
+  left: -10px;
+  width: 35px;  /* Ширина области активации */
+  height: 50px; /* Высота области активации */
+  background: transparent;
+}
+
+.indicator.active {
+  background-color: white;
+}
+
+/* Индикаторы скрыты, пока не наведём на изображение */
+.image-slider:hover .indicator-container {
+  display: flex;
 }

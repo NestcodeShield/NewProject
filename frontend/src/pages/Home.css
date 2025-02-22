@@ -1,5 +1,5 @@
 .Home {
-  height: 3000px;
+  height: auto;
   display: flex;
   justify-content: center;
 }
