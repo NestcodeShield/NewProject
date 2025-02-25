@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-route
 import Breadcrumbs from './components/Breadcrumbs'; // Импортируем компонент хлебных крошек
 import AdsList from "./components/AdsList";
 import AdDetails from "./pages/AdDetails";
+import SearchResults from "./pages/SearchResults";
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<Home />} /> 
+            <Route path="/search" element={<SearchResults />} />
             <Route path="/ads" element={<AdsList />} />
             <Route path="/announcement" element={<Announcement />} />
             <Route path="/ad/:id" element={<AdDetails />} />

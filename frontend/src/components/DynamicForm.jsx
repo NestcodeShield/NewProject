@@ -8,28 +8,27 @@ function DynamicForm() {
   const [description, setDescription] = useState("");
   const [error, setError] = useState({});
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [socialLink, setSocialLink] = useState(""); // Объединённое поле для социальных сетей
+  const [socialLink, setSocialLink] = useState("");
   const [images, setImages] = useState([]);
   const [selectedDuration, setSelectedDuration] = useState("");
   const [price, setPrice] = useState("");
-  const [rooms, setRooms] = useState(""); // Количество комнат
-  const [location, setLocation] = useState(""); // Населённый пункт
-  const cities = ["Подгорица", "Будва", "Котор", "Бар", "Тиват", "Никшич"]; // Добавь сюда нужные города
+  const [rooms, setRooms] = useState("");
+  const [location, setLocation] = useState("");
+  const cities = ["Подгорица", "Будва", "Котор", "Бар", "Тиват", "Никшич"];
 
   const handleCategoryChange = (e) => {
     setCategory(e.target.value);
-    setSubcategory(""); // Сбрасываем подкатегорию при смене категории
+    setSubcategory("");
   };
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     const maxSize = 5 * 1024 * 1024; // Максимальный размер 5MB
 
-    // Проверяем каждый файл на размер
     const validFiles = files.filter((file) => {
       if (file.size > maxSize) {
         alert(`Файл ${file.name} слишком большой! Максимальный размер — 5MB.`);
-        return false; // Не добавляем файл, если он слишком большой
+        return false;
       }
       return true;
     });
@@ -75,17 +74,15 @@ function DynamicForm() {
     if (Object.keys(errors).length === 0) {
       const formData = new FormData();
 
-      // Добавляем обычные поля
       formData.append("category", category);
       formData.append("subcategory", subcategory);
       formData.append("title", title);
       formData.append("description", description);
-      formData.append("price", price); // Отправляем цену как строку, но сервер будет конвертировать её в число
-      formData.append("rooms", rooms); // Также передаем количество комнат
+      formData.append("price", price);
+      formData.append("rooms", rooms);
       formData.append("location", location);
       formData.append("duration", selectedDuration);
 
-      // Добавляем изображения
       images.forEach((image) => {
         formData.append("images", image);
       });
@@ -96,12 +93,12 @@ function DynamicForm() {
           headers: {
             "Accept": "application/json",
           },
-          body: formData, // Отправляем данные через FormData
+          body: formData,
         });
 
         if (response.ok) {
           const result = await response.json();
-          alert("✅ Объявление опубликовано! ID: " + result.ad._id); // Показываем ID
+          alert("✅ Объявление опубликовано! ID: " + result.ad._id);
         } else {
           alert("❌ Ошибка при отправке данных");
         }
@@ -226,7 +223,6 @@ function DynamicForm() {
             <option value="design">Дизайн</option>
           </select>
         )}
-        {/* Добавить другие категории и подкатегории по аналогии */}
 
         {/* Описание */}
         <textarea

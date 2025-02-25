@@ -27,19 +27,19 @@ const AdsList = () => {
         <p>Объявлений пока нет.</p>
       ) : (
         <ul className="ads-list">
-          {ads.map((ad) => (
-            <li key={ad._id} className="ad-card">
-              {ad.images && ad.images.length > 0 && <ImageSlider images={ad.images} />}
-              <h2>
-                <Link to={`/ad/${ad._id}`} style={{ textDecoration: "none", color: "inherit" }}>
-                  {ad.title}
-                </Link>
-              </h2>
-              <p>{ad.location}</p>
-              <p className="price">{ad.price} €</p>
-            </li>
-          ))}
-        </ul>
+            {ads.map((ad) => (
+              <li key={ad._id} className="ad-card">
+                {ad.images && ad.images.length > 0 && <ImageSlider images={ad.images} />}
+                <h2>
+                  <Link to={`/ad/${ad._id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                    {ad.title}
+                  </Link>
+                </h2>
+                <p>{ad.location}</p>
+                <p className="price">{ad.price} €</p>
+              </li>
+            ))}
+          </ul>
       )}
     </div>
   );

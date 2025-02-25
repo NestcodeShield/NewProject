@@ -99,26 +99,86 @@ app.get("/api/ads", async (req, res) => {
       throw new Error("Объявления не найдены");
     }
     res.json(ads);
-  } catch (error) {
+    } catch (error) {
     console.error("Ошибка сервера:", error);
     res.status(500).json({ message: "Ошибка сервера", error: error.message });
   }
 });
 
 // Пример маршрута для получения объявления по ID
-app.get('/api/ads/:id', async (req, res) => {
+app.get("/api/ads/:id", async (req, res) => {
+  const { id } = req.params;
+
+  // Проверяем, является ли id валидным ObjectId
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Некорректный ID объявления" });
+  }
+
+  try {
+    const ad = await Ad.findById(id);
+    if (!ad) {
+      return res.status(404).json({ message: "Объявление не найдено" });
+    }
+    res.json(ad);
+  } catch (error) {
+    console.error("Ошибка при получении объявления:", error);
+    res.status(500).json({ message: "Ошибка сервера" });
+  }
+});
+
+// Маршрут для поиска объявлений
+app.get("/api/ads/search", async (req, res) => {
+  try {
+    const { query, category, subcategory } = req.query;
+
+    // Создаём фильтр для поиска
+    const filter = {};
+
+    if (query) {
+      // Ищем по названию или описанию
+      filter.$or = [
+        { title: { $regex: query, $options: "i" } },
+        { description: { $regex: query, $options: "i" } },
+      ];
+    }
+
+    if (category) {
+      filter.category = category; // Фильтр по категории
+    }
+
+    if (subcategory) {
+      filter.subcategory = subcategory; // Фильтр по подкатегории
+    }
+
+    // Ищем объявления в базе данных
+    const ads = await Ad.find(filter);
+
+    if (!ads || ads.length === 0) {
+      return res.status(404).json({ message: "Объявления не найдены" });
+    }
+
+    res.json(ads); // Отправляем результаты клиенту
+  } catch (error) {
+    console.error("Ошибка при поиске объявлений:", error);
+    res.status(500).json({ message: "Ошибка при поиске объявлений", error: error.message });
+  }
+});
+
+// Маршрут для получения объявления по ID
+app.get("/api/ads/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const ad = await Ad.findById(id);
     if (!ad) {
-      return res.status(404).json({ message: 'Объявление не найдено' });
+      return res.status(404).json({ message: "Объявление не найдено" });
     }
     res.json(ad);
   } catch (error) {
-    console.error('Ошибка при получении объявления:', error);
-    res.status(500).json({ message: 'Ошибка сервера' });
+    console.error("Ошибка при получении объявления:", error);
+    res.status(500).json({ message: "Ошибка сервера" });
   }
 });
+
 
 // Запуск сервера
 const PORT = process.env.PORT || 5000;
