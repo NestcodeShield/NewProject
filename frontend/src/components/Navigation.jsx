@@ -11,8 +11,8 @@ function Navigation() {
   const navigate = useNavigate();
 
   const handleSearch = () => {
-    // Переход на страницу с результатами поиска
-    navigate(`/search?query=${searchQuery}&category=${selectedCategory}&subcategory=${selectedSubcategory}`);
+    console.log("Поиск:", { searchQuery, selectedCategory, selectedSubcategory });
+    navigate(`/search?query=${encodeURIComponent(searchQuery)}&category=${selectedCategory}&subcategory=${selectedSubcategory}`);
   };
 
   return (

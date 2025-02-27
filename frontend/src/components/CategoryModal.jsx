@@ -9,10 +9,11 @@ function CategoryModal({ isOpen, onClose, onSelectCategory, onSelectSubcategory 
   if (!isOpen) return null;
 
   const handleApply = () => {
+    if (!selectedCategory) return; // Не даём закрыть, если не выбрали категорию
     onSelectCategory(selectedCategory);
-    onSelectSubcategory(selectedSubcategory);
-    onClose(); // Закрываем модальное окно после выбора
-  };
+    onSelectSubcategory(selectedSubcategory || ""); // Если не выбрана подкатегория, передаём пустую строку
+    onClose();
+  };  
 
   return (
     <div className="modal-overlay">

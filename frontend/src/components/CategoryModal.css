@@ -38,6 +38,14 @@
   margin: 0;
 }
 
+.category-list  li {
+  color: black;
+}
+
+.subcategory-item li {
+  color: black;
+}
+
 .category-item,
 .subcategory-item {
   padding: 10px;

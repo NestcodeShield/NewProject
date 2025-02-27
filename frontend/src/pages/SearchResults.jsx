@@ -16,11 +16,14 @@ function SearchResults() {
   const subcategory = queryParams.get("subcategory") || "";
 
   useEffect(() => {
+    console.log("Отправка запроса с параметрами:", { searchQuery, category, subcategory });
+  
     const fetchAds = async () => {
       try {
         const response = await axios.get("/api/ads/search", {
           params: { query: searchQuery, category, subcategory },
         });
+        console.log("Ответ от сервера:", response.data); // Посмотрим, что вернул сервер
         setAds(response.data);
       } catch (error) {
         console.error("Ошибка при загрузке объявлений:", error);
@@ -29,9 +32,9 @@ function SearchResults() {
         setLoading(false);
       }
     };
-
+  
     fetchAds();
-  }, [searchQuery, category, subcategory]);
+  }, [searchQuery, category, subcategory]); 
 
   if (loading) return <p>Загрузка...</p>;
   if (error) return <p>{error}</p>;

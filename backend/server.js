@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import multer from "multer";
 import cors from "cors";
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 
 dotenv.config();
 
@@ -47,6 +49,13 @@ const AdSchema = new mongoose.Schema({
   duration: { type: String, required: true },
   images: { type: [String], required: true },
   createdAt: { type: Date, default: Date.now },
+  phoneNumber: String, // Номер телефона
+  socialLinks: [       // Ссылки на соц. сети
+    {
+      type: { type: String }, // Тип ссылки (например, "telegram", "instagram")
+      url: { type: String }   // URL ссылки
+    }
+  ],
 });
 
 const Ad = mongoose.model("Ad", AdSchema);
@@ -54,36 +63,33 @@ const Ad = mongoose.model("Ad", AdSchema);
 // Маршрут для добавления объявления с изображениями
 app.post("/api/ads", upload.array("images", 10), async (req, res) => {
   try {
-    // Проверка наличия файлов
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: "Не загружены файлы!" });
     }
 
-    const { category, subcategory, title, description, price, rooms, location, duration } = req.body;
+    const { category, subcategory, title, description, price, rooms, location, duration, phoneNumber, socialLinks } = req.body;
     
-    // Преобразование пути изображений
     const imagePaths = req.files.map(file => `/images/${file.filename}`);
 
-    // Создание объявления
     const newAd = new Ad({
       category,
       subcategory,
       title,
       description,
-      price: parseFloat(price), // Преобразование цены
-      rooms: rooms ? parseInt(rooms, 10) : undefined, // Преобразование количества комнат
+      price: parseFloat(price),
+      rooms: rooms ? parseInt(rooms, 10) : undefined,
       location,
       duration,
       images: imagePaths,
+      phoneNumber, // ✅ Добавляем номер телефона
+      socialLinks: socialLinks ? JSON.parse(socialLinks) : [], // ✅ Добавляем ссылки
     });
 
-    // Сохранение объявления в базе данных
     await newAd.save();
     
-    // Отправка ответа
     res.status(201).json({
       message: "✅ Объявление добавлено!",
-      ad: newAd, // Возвращаем объявление с ID
+      ad: newAd,
     });
   } catch (error) {
     console.error("Ошибка при добавлении объявления:", error);
@@ -91,78 +97,56 @@ app.post("/api/ads", upload.array("images", 10), async (req, res) => {
   }
 });
 
+
 // Маршрут для получения всех объявлений
 app.get("/api/ads", async (req, res) => {
   try {
-    const ads = await Ad.find();
-    if (!ads) {
-      throw new Error("Объявления не найдены");
+    const { query, category, subcategory } = req.query;
+    let filter = {};
+
+    if (query) {
+      filter.title = { $regex: query, $options: "i" }; // Поиск по названию (регистронезависимо)
     }
+    if (category) {
+      filter.category = category;
+    }
+    if (subcategory) {
+      filter.subcategory = subcategory;
+    }
+
+    console.log("🔍 Фильтр поиска:", filter);
+
+    const ads = await Ad.find(filter);
     res.json(ads);
-    } catch (error) {
-    console.error("Ошибка сервера:", error);
-    res.status(500).json({ message: "Ошибка сервера", error: error.message });
+  } catch (error) {
+    console.error("Ошибка поиска объявлений:", error);
+    res.status(500).json({ error: "Ошибка при поиске объявлений" });
   }
 });
 
-// Пример маршрута для получения объявления по ID
-app.get("/api/ads/:id", async (req, res) => {
-  const { id } = req.params;
 
-  // Проверяем, является ли id валидным ObjectId
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: "Некорректный ID объявления" });
+// Пример маршрута для получения объявления по ID
+
+// Маршрут для поиска объявлений
+app.get("/api/ads/search", async (req, res) => {
+  const { query, category, subcategory } = req.query;
+  const filter = {};
+
+  if (query) {
+    filter.title = { $regex: query, $options: "i" }; // Поиск по названию (регистронезависимый)
   }
+  if (category) filter.category = category;
+  if (subcategory) filter.subcategory = subcategory;
 
   try {
-    const ad = await Ad.findById(id);
-    if (!ad) {
-      return res.status(404).json({ message: "Объявление не найдено" });
-    }
-    res.json(ad);
+    const ads = await Ad.find(filter);
+    res.json(ads);
   } catch (error) {
-    console.error("Ошибка при получении объявления:", error);
+    console.error(error);
     res.status(500).json({ message: "Ошибка сервера" });
   }
 });
 
-// Маршрут для поиска объявлений
-app.get("/api/ads/search", async (req, res) => {
-  try {
-    const { query, category, subcategory } = req.query;
-
-    // Создаём фильтр для поиска
-    const filter = {};
-
-    if (query) {
-      // Ищем по названию или описанию
-      filter.$or = [
-        { title: { $regex: query, $options: "i" } },
-        { description: { $regex: query, $options: "i" } },
-      ];
-    }
-
-    if (category) {
-      filter.category = category; // Фильтр по категории
-    }
-
-    if (subcategory) {
-      filter.subcategory = subcategory; // Фильтр по подкатегории
-    }
-
-    // Ищем объявления в базе данных
-    const ads = await Ad.find(filter);
-
-    if (!ads || ads.length === 0) {
-      return res.status(404).json({ message: "Объявления не найдены" });
-    }
-
-    res.json(ads); // Отправляем результаты клиенту
-  } catch (error) {
-    console.error("Ошибка при поиске объявлений:", error);
-    res.status(500).json({ message: "Ошибка при поиске объявлений", error: error.message });
-  }
-});
 
 // Маршрут для получения объявления по ID
 app.get("/api/ads/:id", async (req, res) => {
@@ -178,6 +162,7 @@ app.get("/api/ads/:id", async (req, res) => {
     res.status(500).json({ message: "Ошибка сервера" });
   }
 });
+
 
 
 // Запуск сервера

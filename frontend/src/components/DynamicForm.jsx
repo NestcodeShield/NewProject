@@ -67,13 +67,13 @@ function DynamicForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const errors = validateForm();
     setError(errors);
-
+  
     if (Object.keys(errors).length === 0) {
       const formData = new FormData();
-
+  
       formData.append("category", category);
       formData.append("subcategory", subcategory);
       formData.append("title", title);
@@ -82,11 +82,18 @@ function DynamicForm() {
       formData.append("rooms", rooms);
       formData.append("location", location);
       formData.append("duration", selectedDuration);
-
+      formData.append("phoneNumber", phoneNumber);
+  
+      // Добавляем ссылки на соц. сети
+      if (socialLink) {
+        const socialLinks = [{ type: "other", url: socialLink }];
+        formData.append("socialLinks", JSON.stringify(socialLinks));
+      }
+  
       images.forEach((image) => {
         formData.append("images", image);
       });
-
+  
       try {
         const response = await fetch("http://localhost:5000/api/ads", {
           method: "POST",
@@ -95,7 +102,7 @@ function DynamicForm() {
           },
           body: formData,
         });
-
+  
         if (response.ok) {
           const result = await response.json();
           alert("✅ Объявление опубликовано! ID: " + result.ad._id);

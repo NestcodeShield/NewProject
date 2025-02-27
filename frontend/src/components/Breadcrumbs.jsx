@@ -28,7 +28,7 @@ function Breadcrumbs({ category }) {
             if (value === "ad") return null;
 
             return (
-              <li key={to} style={{ marginLeft: '8px', fontSize: '15px' }}>
+              <li key={to} style={{ fontSize: '15px', gap: 10 }}>
                 {'>'}
                 {index === pathnames.length - 1 ? (
                   <span>{category}</span> // Текст категории

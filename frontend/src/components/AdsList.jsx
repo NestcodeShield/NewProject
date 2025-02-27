@@ -31,7 +31,7 @@ const AdsList = () => {
               <li key={ad._id} className="ad-card">
                 {ad.images && ad.images.length > 0 && <ImageSlider images={ad.images} />}
                 <h2>
-                  <Link to={`/ad/${ad._id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                  <Link to={`/ad/${ad._id}`}>
                     {ad.title}
                   </Link>
                 </h2>
