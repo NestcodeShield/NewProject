@@ -15,10 +15,11 @@
   background-color: white;
   padding: 20px;
   border-radius: 8px;
-  width: 400px;
+  width: 600px; /* Увеличим ширину для нескольких колонок */
   max-height: 80vh;
   overflow-y: auto;
   position: relative;
+  color: black;
 }
 
 .close-button {
@@ -31,19 +32,27 @@
   cursor: pointer;
 }
 
+.back-button {
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: #ddd;
+}
+
 .category-list,
 .subcategory-list {
   list-style: none;
   padding: 0;
   margin: 0;
-}
-
-.category-list  li {
-  color: black;
-}
-
-.subcategory-item li {
-  color: black;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Три колонки для категорий */
+  gap: 10px; /* Расстояние между элементами */
 }
 
 .category-item,
@@ -51,7 +60,9 @@
   padding: 10px;
   cursor: pointer;
   border-radius: 4px;
-  margin: 5px 0;
+  background-color: #f9f9f9;
+  text-align: center;
+  color: black;
 }
 
 .category-item:hover,

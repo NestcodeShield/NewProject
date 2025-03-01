@@ -22,6 +22,8 @@ function DynamicForm() {
     setSubcategory("");
   };
 
+  
+
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     const maxSize = 5 * 1024 * 1024; // Максимальный размер 5MB
@@ -284,7 +286,6 @@ function DynamicForm() {
             {error.rooms && <div className="dynamic-error">{error.rooms}</div>}
           </>
         )}
-
         {/* Возможность доставки */}
         <select
           className="dynamic-select"

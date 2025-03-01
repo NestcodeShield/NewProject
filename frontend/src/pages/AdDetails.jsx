@@ -164,6 +164,10 @@ const AdDetails = () => {
                 <span className="gray-text">{ad.location || "Город не указан"}</span>
               </p>
               <p className="characteristics-item">
+                <strong>Доставка:</strong>{" "}
+                <span className="gray-text">{ad.deliveryOption || "Не указано"}</span>
+              </p>
+              <p className="characteristics-item">
                 <strong>Опубликовано:</strong>{" "}
                 <span className="gray-text">
                   {ad.createdAt ? new Date(ad.createdAt).toLocaleDateString() : "Дата не указана"}
