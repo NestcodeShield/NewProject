@@ -14,6 +14,7 @@ function DynamicForm() {
   const [price, setPrice] = useState("");
   const [rooms, setRooms] = useState("");
   const [location, setLocation] = useState("");
+  const [deliveryOption, setDeliveryOption] = useState(""); // Новое состояние для доставки
   const cities = ["Подгорица", "Будва", "Котор", "Бар", "Тиват", "Никшич"];
 
   const handleCategoryChange = (e) => {
@@ -83,6 +84,7 @@ function DynamicForm() {
       formData.append("location", location);
       formData.append("duration", selectedDuration);
       formData.append("phoneNumber", phoneNumber);
+      formData.append("deliveryOption", deliveryOption); // Добавляем возможность доставки
   
       // Добавляем ссылки на соц. сети
       if (socialLink) {
@@ -282,6 +284,17 @@ function DynamicForm() {
             {error.rooms && <div className="dynamic-error">{error.rooms}</div>}
           </>
         )}
+
+        {/* Возможность доставки */}
+        <select
+          className="dynamic-select"
+          value={deliveryOption}
+          onChange={(e) => setDeliveryOption(e.target.value)}
+        >
+          <option value="">Доставка</option>
+          <option value="yes">Возможна</option>
+          <option value="no">Отсутствует</option>
+        </select>
 
         {/* Ссылка на соц. сети */}
         <input

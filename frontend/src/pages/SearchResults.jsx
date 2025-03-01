@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 import "./SearchResults.css";
 import Header from "../components/Header";
+import Breadcrumbs from "../components/Breadcrumbs";
 
 function SearchResults() {
   const [ads, setAds] = useState([]);
@@ -42,6 +43,8 @@ function SearchResults() {
   return (
     <div className="Ads-container">
       <Header />
+      <div className="ads-result-list"></div>
+      <Breadcrumbs />
       <h2>Результаты поиска</h2>
       {ads.length === 0 ? (
         <p>Ничего не найдено.</p>

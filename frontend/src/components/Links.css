@@ -16,6 +16,7 @@
   width: 1400px;
   justify-content: space-between;
   padding: 4px;
+  background-color: rgb(37, 37, 37);
 }
 
 ul {
@@ -57,6 +58,7 @@ li {
   flex-direction: row;
   gap: 20px;
   width: auto;
+  background-color: rgb(37, 37, 37);
 }
 
 .announcement {

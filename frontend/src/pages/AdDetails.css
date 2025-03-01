@@ -9,6 +9,8 @@
   gap: 20px;
 }
 
+
+
 .ad-images {
   width: 100%;
   max-width: 600px; /* Ограничиваем ширину блока с фото */
@@ -101,7 +103,7 @@
 }
 
 .characteristics-item {
-  margin-bottom: 10px;
+  margin-bottom: 10px;  
 }
 
 .gray-text {
@@ -146,3 +148,10 @@
   max-height: 100%;
   border-radius: 8px;
 } 
+
+.ad-info .characteristics-item .gray-text {
+  overflow: hidden; /* Скрывает текст, выходящий за границы */
+  text-overflow: ellipsis; /* Добавляет многоточие в конце */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}

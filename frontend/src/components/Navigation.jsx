@@ -16,19 +16,22 @@ function Navigation() {
   };
 
   return (
-    <>
+    <>  
       <div className="Navigation">
         <nav>
           <img alt="logo" />
-          <button onClick={() => setIsModalOpen(true)}>Категории</button>
-          <label>
+          <button onClick={() => setIsModalOpen(true)}>
+          <img src="/icons/Slider_03.svg" alt="Search" />
+            Категории</button>
+          <label> 
             <input
               type="search"
               placeholder="Поиск по названию"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <button onClick={handleSearch}>Найти</button>
+            <button onClick={handleSearch}>
+              Найти</button>
           </label>
         </nav>
       </div>
@@ -44,4 +47,4 @@ function Navigation() {
   );
 }
 
-export default Navigation;
+export default Navigation;  

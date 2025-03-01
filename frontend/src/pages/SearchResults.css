@@ -1,4 +1,15 @@
 .Ads-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  top: 65px;
+}
+
+.ads-result-list {
+  display: flex;
+  flex-direction: column;
 
 }
 

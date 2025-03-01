@@ -35,8 +35,8 @@ const AdsList = () => {
                     {ad.title}
                   </Link>
                 </h2>
-                <p>{ad.location}</p>
                 <p className="price">{ad.price} €</p>
+                <p className="location">{ad.location}</p>
               </li>
             ))}
           </ul>
