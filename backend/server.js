@@ -1,23 +1,25 @@
-import express from "express"; 
+import express from "express";
 import mongoose from "mongoose";
 import multer from "multer";
 import cors from "cors";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
-import bcrypt from "bcrypt"; // или bcryptjs
-import jwt from "jsonwebtoken"; 
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
-const app = express(); // Создаем экземпляр Express
+const app = express();
+app.use(express.json());
 
-// Разрешаем доступ с фронтенда
-app.use(cors({
-  origin: 'http://localhost:5173', 
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // Статическое обслуживание изображений
 app.use("/images", express.static("public/images"));
@@ -25,19 +27,26 @@ app.use("/images", express.static("public/images"));
 // Настройка Multer для сохранения файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/images"); 
+    cb(null, "public/images");
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname); // Имя файла
+    cb(null, Date.now() + "-" + file.originalname);
   },
 });
-
 const upload = multer({ storage });
 
 // Подключение к MongoDB
-mongoose.connect("mongodb://127.0.0.1:27017/montenegro_ads")
+mongoose
+  .connect("mongodb://127.0.0.1:27017/montenegro_ads", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("✅ Успешное подключение к MongoDB"))
-  .catch((error) => console.error("Ошибка подключения к MongoDB", error));
+  .catch((error) =>
+    console.error("Ошибка подключения к MongoDB", error)
+  );
+
+// --- МОДЕЛИ ---
 
 // Модель объявления
 const AdSchema = new mongoose.Schema({
@@ -51,40 +60,49 @@ const AdSchema = new mongoose.Schema({
   duration: { type: String, required: true },
   images: { type: [String], required: true },
   createdAt: { type: Date, default: Date.now },
-  phoneNumber: String, // Номер телефона
-  socialLinks: [       // Ссылки на соц. сети
+  phoneNumber: String,
+  socialLinks: [
     {
-      type: { type: String }, // Тип ссылки (например, "telegram", "instagram")
-      url: { type: String }   // URL ссылки
-    }
+      type: { type: String },
+      url: { type: String },
+    },
   ],
   deliveryOption: { type: String, required: true },
 });
-
+const Ad = mongoose.model("Ad", AdSchema);
 
 // Модель пользователя
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
+  email:    { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now },
+  createdAt:{ type: Date, default: Date.now },
 });
-
-
 const User = mongoose.model("User", UserSchema);
 
-const Ad = mongoose.model("Ad", AdSchema);
+// --- ЭНДПОИНТЫ ---
 
-// Маршрут для добавления объявления с изображениями
+// Добавление объявления с изображениями
 app.post("/api/ads", upload.array("images", 10), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: "Не загружены файлы!" });
     }
+    const {
+      category,
+      subcategory,
+      title,
+      description,
+      price,
+      rooms,
+      location,
+      duration,
+      phoneNumber,
+      socialLinks,
+      deliveryOption,
+    } = req.body;
 
-    const { category, subcategory, title, description, price, rooms, location, duration, phoneNumber, socialLinks,deliveryOption } = req.body;
-    
-    const imagePaths = req.files.map(file => `/images/${file.filename}`);
+    const imagePaths = req.files.map((file) => `/images/${file.filename}`);
 
     const newAd = new Ad({
       category,
@@ -96,13 +114,12 @@ app.post("/api/ads", upload.array("images", 10), async (req, res) => {
       location,
       duration,
       images: imagePaths,
-      phoneNumber, // ✅ Добавляем номер телефона
-      socialLinks: socialLinks ? JSON.parse(socialLinks) : [], // ✅ Добавляем ссылки,
-      deliveryOption, 
+      phoneNumber,
+      socialLinks: socialLinks ? JSON.parse(socialLinks) : [],
+      deliveryOption,
     });
 
     await newAd.save();
-    
     res.status(201).json({
       message: "✅ Объявление добавлено!",
       ad: newAd,
@@ -113,30 +130,16 @@ app.post("/api/ads", upload.array("images", 10), async (req, res) => {
   }
 });
 
-
-// Маршрут для получения всех объявлений
+// Получение всех объявлений
 app.get("/api/ads", async (req, res) => {
   try {
     const { query, category, subcategory } = req.query;
     let filter = {};
-
-    // Фильтрация по поисковой строке
-    if (query) {
-      filter.title = { $regex: query, $options: "i" }; // Поиск по названию (регистронезависимо)
-    }
-
-    // Фильтрация по категории
-    if (category) {
-      filter.category = category;
-    }
-
-    // Фильтрация по подкатегории
-    if (subcategory) {
-      filter.subcategory = subcategory;
-    }
+    if (query) filter.title = { $regex: query, $options: "i" };
+    if (category) filter.category = category;
+    if (subcategory) filter.subcategory = subcategory;
 
     console.log("🔍 Фильтр поиска:", filter);
-
     const ads = await Ad.find(filter);
     res.json(ads);
   } catch (error) {
@@ -145,31 +148,7 @@ app.get("/api/ads", async (req, res) => {
   }
 });
 
-
-// Пример маршрута для получения объявления по ID
-
-// Маршрут для поиска объявлений
-app.get("/api/ads/search", async (req, res) => {
-  const { query, category, subcategory } = req.query;
-  const filter = {};
-
-  if (query) {
-    filter.title = { $regex: query, $options: "i" }; // Поиск по названию (регистронезависимый)
-  }
-  if (category) filter.category = category;
-  if (subcategory) filter.subcategory = subcategory;
-
-  try {
-    const ads = await Ad.find(filter);
-    res.json(ads);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Ошибка сервера" });
-  }
-});
-
-
-// Маршрут для получения объявления по ID
+// Получение объявления по ID
 app.get("/api/ads/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -184,10 +163,8 @@ app.get("/api/ads/:id", async (req, res) => {
   }
 });
 
-
-// Вход пользователя
+// Регистрация пользователя
 app.post("/api/register", async (req, res) => {
-  
   try {
     const { username, email, password } = req.body;
     console.log("📥 Получены данные:", { username, email, password });
@@ -195,19 +172,21 @@ app.post("/api/register", async (req, res) => {
     if (!username || !email || !password) {
       return res.status(400).json({ message: "Все поля обязательны" });
     }
-
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Пароль должен быть не менее 6 символов" });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: "Некорректный email" });
+    }
     const existingUser = await User.findOne({ $or: [{ username }, { email }] });
     if (existingUser) {
       return res.status(400).json({ message: "Пользователь уже существует" });
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log("🔑 Пароль хеширован");
-
     const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
-    console.log("✅ Пользователь сохранен в БД");
 
+    console.log("✅ Пользователь сохранен в БД:", newUser);
     res.status(201).json({ message: "✅ Пользователь зарегистрирован!" });
   } catch (error) {
     console.error("🚨 Ошибка при регистрации:", error);
@@ -215,43 +194,55 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-
+// Логин пользователя
 app.post("/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log("📥 Получены данные для входа:", { username });
 
-    // Проверка, что все поля заполнены
     if (!username || !password) {
       return res.status(400).json({ message: "Все поля обязательны" });
     }
-
-    // Поиск пользователя
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(400).json({ message: "Пользователь не найден" });
     }
-
-    // Проверка пароля
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({ message: "Неверный пароль" });
     }
-
-    // Создание JWT токена
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-
-    // Успешный ответ
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    console.log("✅ Успешный вход:", user.username);
     res.status(200).json({ token, user: { id: user._id, username: user.username } });
   } catch (error) {
-    console.error("Ошибка при входе:", error);
-    res.status(500).json({ message: "Ошибка сервера" });
+    console.error("🚨 Ошибка при входе:", error);
+    res.status(500).json({ message: "Ошибка сервера", error: error.message });
   }
 });
 
-
-
+// Маршрут для получения информации о пользователе (профиля)
+app.get("/api/profile", async (req, res) => {
+  try {
+    const token = req.header("Authorization")?.replace("Bearer ", "");
+    if (!token) {
+      return res.status(401).json({ message: "Пользователь не авторизован" });
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Пользователь не найден" });
+    }
+    res.json({
+      username: user.username,
+      email: user.email,
+      createdAt: user.createdAt,
+    });
+  } catch (error) {
+    console.error("Ошибка при получении профиля:", error);
+    res.status(500).json({ message: "Ошибка сервера", error: error.message });
+  }
+});
 
 // Запуск сервера
 const PORT = process.env.PORT || 5000;

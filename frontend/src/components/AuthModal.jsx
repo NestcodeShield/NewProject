@@ -10,10 +10,20 @@ function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isRegister) {
-      await onRegister({ username, email, password });  // Передаём данные
-    } else {
-      await onLogin({ username, password });  // Только логин и пароль
+    try {
+      if (isRegister) {
+        await onRegister({ username, email, password });
+      } else {
+        await onLogin({ username, password });
+      }
+      // Сброс полей формы
+      setUsername("");
+      setEmail("");
+      setPassword("");
+      onClose();
+    } catch (error) {
+      console.error("Ошибка:", error.message);
+      alert(error.message); // Покажите ошибку пользователю
     }
   };
 

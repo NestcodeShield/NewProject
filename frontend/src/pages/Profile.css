@@ -1,0 +1,20 @@
+.profile {
+  position: relative;
+  top: 200px;
+  display: flex;
+  justify-content: center;
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profileInfo h2 {
+  color: black;
+}
+
+.profileInfo p {
+  color: black;
+}

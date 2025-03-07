@@ -7,9 +7,12 @@ import Breadcrumbs from './components/Breadcrumbs'; // Импортируем к
 import AdsList from "./components/AdsList";
 import AdDetails from "./pages/AdDetails";
 import SearchResults from "./pages/SearchResults";
+import Profile from './pages/Profile';
 
 
-function App() {
+function App(
+
+) {
 
 
   return (
@@ -21,6 +24,7 @@ function App() {
             <Route path="/ads" element={<AdsList />} />
             <Route path="/announcement" element={<Announcement />} />
             <Route path="/ad/:id" element={<AdDetails />} />
+            <Route path="/profile" element={<Profile />} />
          </Routes>
       </Router>
 
