@@ -21,8 +21,8 @@ function SearchResults() {
   
     const fetchAds = async () => {
       try {
-        const response = await axios.get("/api/ads/search", {
-          params: { query: searchQuery, category, subcategory },
+        const response = await axios.get("/api/ads", {
+          params: { ...(searchQuery && { query: searchQuery }), category, subcategory },
         });
         console.log("Ответ от сервера:", response.data); // Посмотрим, что вернул сервер
         setAds(response.data);

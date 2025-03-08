@@ -11,28 +11,42 @@ function Profile() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.log("Пользователь не авторизован");
-        return;
-      }
+ // ✅ Загрузка избранных только из localStorage
+useEffect(() => {
+  const loadFavorites = () => {
+    const saved = JSON.parse(localStorage.getItem("favorites")) || [];
+    setFavorites(saved);
+  };
 
-      try {
-        const response = await axios.get("http://localhost:5000/api/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        console.log("Данные профиля:", response.data);
-        setUser(response.data);
-      } catch (err) {
-        console.error("Ошибка при получении профиля:", err);
-        setError(err.message);
-      }
-    };
+  loadFavorites();
+  window.addEventListener("storage", loadFavorites);
+  return () => window.removeEventListener("storage", loadFavorites);
+}, []);
 
-    fetchProfile();
-  }, []);
+useEffect(() => {
+  const fetchProfile = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.log("Пользователь не авторизован");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await axios.get("http://localhost:5000/api/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Данные профиля:", response.data);
+      setUser(response.data);
+    } catch (err) {
+      console.error("Ошибка при получении профиля:", err);
+      setError(err.message);
+    }
+  };
+
+  fetchProfile();
+}, [navigate]);
+
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -43,14 +57,26 @@ function Profile() {
   if (error) return <p>Ошибка: {error}</p>;
   if (!user) return <p>Загрузка...</p>;
 
+  axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && error.response?.data?.expired) {
+      alert("Сессия истекла, пожалуйста, войдите снова.");
+      localStorage.removeItem("token"); // Удаляем старый токен
+      window.location.href = "/login"; // Перенаправляем на авторизацию
+    }
+    return Promise.reject(error);
+  }
+);
+
+
+
   return (
     <div className="profile">
       <Header />
       <div className="profileInfo">
         <Breadcrumbs />
         <h2>Личный кабинет</h2>
-        {/* Для отладки можно временно вывести весь объект */}
-        <pre>{JSON.stringify(user, null, 2)}</pre>
         <p>
           <strong>Имя пользователя:</strong> {user.username || "Неизвестный пользователь"}
         </p>

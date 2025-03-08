@@ -8,6 +8,7 @@ import AdsList from "./components/AdsList";
 import AdDetails from "./pages/AdDetails";
 import SearchResults from "./pages/SearchResults";
 import Profile from './pages/Profile';
+import Favorites from './pages/Favorites';
 
 
 function App(
@@ -22,6 +23,7 @@ function App(
             <Route path="/" element={<Home />} /> 
             <Route path="/search" element={<SearchResults />} />
             <Route path="/ads" element={<AdsList />} />
+            <Route path="/favorites" element={<Favorites />} />
             <Route path="/announcement" element={<Announcement />} />
             <Route path="/ad/:id" element={<AdDetails />} />
             <Route path="/profile" element={<Profile />} />

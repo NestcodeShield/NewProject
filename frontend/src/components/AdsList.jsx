@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from "react"; 
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "./AdsList.css";
@@ -9,17 +9,35 @@ const AdsList = () => {
   React.useEffect(() => {
     const fetchAds = async () => {
       try {
-        const response = await axios.get("/api/ads");
+        const response = await axios.get("http://localhost:5000/api/ads");
         setAds(response.data);
         localStorage.setItem("ads", JSON.stringify(response.data));
       } catch (error) {
         console.error("Ошибка загрузки объявлений:", error);
-        alert("Ошибка при загрузке объявлений, пожалуйста, попробуйте позже.");
+        alert("Ошибка при загрузкеa объявлений, пожалуйста, попробуйте позже.");
       }
     };
 
     fetchAds();
   }, []);
+
+  const handleAddToFavorites = (ad) => {
+    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    
+    // Проверка на дубликат
+    if (favorites.some(fav => fav._id === ad._id)) {
+      alert("Уже в избранном!");
+      return;
+    }
+  
+    // Обновляем и сохраняем
+    const updatedFavorites = [...favorites, ad];
+    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+    
+    // Уведомляем другие компоненты
+    window.dispatchEvent(new Event("storage"));
+    alert("Добавлено в избранное!");
+  };
 
   return (
     <div className="Ads-container">
@@ -27,19 +45,22 @@ const AdsList = () => {
         <p>Объявлений пока нет.</p>
       ) : (
         <ul className="ads-list">
-            {ads.map((ad) => (
-              <li key={ad._id} className="ad-card">
-                {ad.images && ad.images.length > 0 && <ImageSlider images={ad.images} />}
-                <h2>
-                  <Link to={`/ad/${ad._id}`}>
-                    {ad.title}
-                  </Link>
-                </h2>
-                <p className="price">{ad.price} €</p>
-                <p className="location">{ad.location}</p>
-              </li>
-            ))}
-          </ul>
+          {ads.map((ad) => (
+            <li key={ad._id} className="ad-card">
+              {ad.images && ad.images.length > 0 && <ImageSlider images={ad.images} />}
+              <h2>
+                <Link to={`/ad/${ad._id}`}>
+                  {ad.title}
+                </Link>
+              </h2>
+              <p className="price">{ad.price} €</p>
+              <p className="location">{ad.location}</p>
+              <button onClick={() => handleAddToFavorites(ad)}>
+                Добавить в избранное
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
@@ -73,6 +94,8 @@ const ImageSlider = ({ images }) => {
         </div>
       )}
     </div>
+
+    
   );
 };
 

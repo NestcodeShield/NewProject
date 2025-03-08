@@ -1,4 +1,5 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import axios from "axios";
 
 function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
   const [isRegister, setIsRegister] = useState(false);
@@ -11,11 +12,15 @@ function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      let response;
       if (isRegister) {
-        await onRegister({ username, email, password });
+        response = await onRegister({ username, email, password });
       } else {
-        await onLogin({ username, password });
+        response = await onLogin({ username, password });
       }
+
+      localStorage.setItem("token", response.data.token); // Сохранение токена
+
       // Сброс полей формы
       setUsername("");
       setEmail("");
@@ -65,5 +70,42 @@ function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
     </div>
   );
 }
+
+const Profile = () => {
+  const [profile, setProfile] = useState(null);
+
+  const fetchProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Необходима авторизация");
+        return;
+      }
+
+      const response = await axios.get("http://localhost:5000/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setProfile(response.data);
+    } catch (error) {
+      console.error("Ошибка при получении профиля:", error.response?.data || error.message);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchProfile}>Загрузить профиль</button>
+      {profile && (
+        <div>
+          <h3>Профиль</h3>
+          <p>Имя пользователя: {profile.username}</p>
+          <p>ID: {profile.id}</p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default AuthModal;

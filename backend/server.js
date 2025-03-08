@@ -135,7 +135,10 @@ app.get("/api/ads", async (req, res) => {
   try {
     const { query, category, subcategory } = req.query;
     let filter = {};
-    if (query) filter.title = { $regex: query, $options: "i" };
+
+    if (query && query.trim() !== "") {
+      filter.title = { $regex: query, $options: "i" };
+    }
     if (category) filter.category = category;
     if (subcategory) filter.subcategory = subcategory;
 
@@ -148,10 +151,15 @@ app.get("/api/ads", async (req, res) => {
   }
 });
 
+
 // Получение объявления по ID
 app.get("/api/ads/:id", async (req, res) => {
+  console.log("🔎 Запрос объявления с ID:", req.params.id);
   const { id } = req.params;
   try {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Некорректный ID" });
+    }
     const ad = await Ad.findById(id);
     if (!ad) {
       return res.status(404).json({ message: "Объявление не найдено" });
@@ -227,22 +235,49 @@ app.get("/api/profile", async (req, res) => {
     if (!token) {
       return res.status(401).json({ message: "Пользователь не авторизован" });
     }
+    
+    // Расшифровываем токен
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
     const user = await User.findById(userId);
+    
     if (!user) {
       return res.status(404).json({ message: "Пользователь не найден" });
     }
+
     res.json({
       username: user.username,
       email: user.email,
       createdAt: user.createdAt,
     });
+
   } catch (error) {
     console.error("Ошибка при получении профиля:", error);
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Срок действия токена истёк", expired: true });
+    }
     res.status(500).json({ message: "Ошибка сервера", error: error.message });
   }
 });
+
+
+app.post("/api/refresh-token", async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      return res.status(401).json({ message: "Токен отсутствует" });
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
+    const newAccessToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+    res.json({ accessToken: newAccessToken });
+  } catch (error) {
+    res.status(403).json({ message: "Недействительный refresh-токен" });
+  }
+});
+
+
 
 // Запуск сервера
 const PORT = process.env.PORT || 5000;
