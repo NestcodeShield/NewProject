@@ -172,35 +172,35 @@ app.get("/api/ads/:id", async (req, res) => {
 });
 
 // Регистрация пользователя
+
+
+
 app.post("/api/register", async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    console.log("📥 Получены данные:", { username, email, password });
-
     if (!username || !email || !password) {
-      return res.status(400).json({ message: "Все поля обязательны" });
+      return res.status(400).json({ error: "Все поля обязательны" });
     }
-    if (password.length < 6) {
-      return res.status(400).json({ message: "Пароль должен быть не менее 6 символов" });
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ message: "Некорректный email" });
-    }
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "Пользователь уже существует" });
+      return res.status(400).json({ error: "Пользователь с таким email уже существует" });
     }
+    
+    // Хэшируем пароль перед сохранением
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, email, password: hashedPassword });
-    await newUser.save();
-
-    console.log("✅ Пользователь сохранен в БД:", newUser);
-    res.status(201).json({ message: "✅ Пользователь зарегистрирован!" });
+    const newUser = await User.create({ username, email, password: hashedPassword });
+    
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    res.json({ token });
   } catch (error) {
-    console.error("🚨 Ошибка при регистрации:", error);
-    res.status(500).json({ message: "Ошибка сервера", error: error.message });
+    console.error("Ошибка регистрации:", error);
+    res.status(500).json({ error: error.message });
   }
 });
+
+
+
 
 // Логин пользователя
 app.post("/api/login", async (req, res) => {
@@ -233,7 +233,7 @@ app.get("/api/profile", async (req, res) => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
     if (!token) {
-      return res.status(401).json({ message: "Пользователь не авторизован" });
+      return res.status(401).json({ message: "Пользователь не авторизован", reauthenticate: true });
     }
     
     // Расшифровываем токен
@@ -254,7 +254,7 @@ app.get("/api/profile", async (req, res) => {
   } catch (error) {
     console.error("Ошибка при получении профиля:", error);
     if (error.name === "TokenExpiredError") {
-      return res.status(401).json({ message: "Срок действия токена истёк", expired: true });
+      return res.status(401).json({ message: "Срок действия токена истёк", expired: true, reauthenticate: true });
     }
     res.status(500).json({ message: "Ошибка сервера", error: error.message });
   }
@@ -265,7 +265,7 @@ app.post("/api/refresh-token", async (req, res) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken) {
-      return res.status(401).json({ message: "Токен отсутствует" });
+      return res.status(401).json({ message: "Токен отсутствует", reauthenticate: true });
     }
 
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
@@ -273,7 +273,7 @@ app.post("/api/refresh-token", async (req, res) => {
 
     res.json({ accessToken: newAccessToken });
   } catch (error) {
-    res.status(403).json({ message: "Недействительный refresh-токен" });
+    return res.status(401).json({ message: "Недействительный refresh-токен", reauthenticate: true });
   }
 });
 

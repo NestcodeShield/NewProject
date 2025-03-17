@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
 
 function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
   const [isRegister, setIsRegister] = useState(false);
@@ -18,17 +17,18 @@ function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
       } else {
         response = await onLogin({ username, password });
       }
-
-      localStorage.setItem("token", response.data.token); // Сохранение токена
-
-      // Сброс полей формы
+      
+      console.log("Ответ сервера:", response);
+      
+      
+      // Если токен успешно получен, поля формы очищаются и модалка закрывается.
       setUsername("");
       setEmail("");
       setPassword("");
       onClose();
     } catch (error) {
-      console.error("Ошибка:", error.message);
-      alert(error.message); // Покажите ошибку пользователю
+      console.error("Ошибка:", error);
+      alert(error.message || "Ошибка при авторизации. Проверьте данные.");
     }
   };
 
@@ -62,7 +62,7 @@ function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
           />
           <button type="submit">{isRegister ? "Зарегистрироваться" : "Войти"}</button>
         </form>
-        <p onClick={() => setIsRegister(!isRegister)}>
+        <p onClick={() => setIsRegister(!isRegister)} style={{ cursor: "pointer", color: "blue" }}>
           {isRegister ? "Уже есть аккаунт? Войти" : "Нет аккаунта? Зарегистрироваться"}
         </p>
         <button onClick={onClose}>Закрыть</button>
@@ -70,42 +70,5 @@ function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
     </div>
   );
 }
-
-const Profile = () => {
-  const [profile, setProfile] = useState(null);
-
-  const fetchProfile = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Необходима авторизация");
-        return;
-      }
-
-      const response = await axios.get("http://localhost:5000/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setProfile(response.data);
-    } catch (error) {
-      console.error("Ошибка при получении профиля:", error.response?.data || error.message);
-    }
-  };
-
-  return (
-    <div>
-      <button onClick={fetchProfile}>Загрузить профиль</button>
-      {profile && (
-        <div>
-          <h3>Профиль</h3>
-          <p>Имя пользователя: {profile.username}</p>
-          <p>ID: {profile.id}</p>
-        </div>
-      )}
-    </div>
-  );
-};
 
 export default AuthModal;

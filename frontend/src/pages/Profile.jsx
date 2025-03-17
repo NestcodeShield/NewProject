@@ -1,34 +1,36 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
-import './Profile.css';
 import Header from "../components/Header";
 import Breadcrumbs from "../components/Breadcrumbs";
-import axios from 'axios';
+import "./Profile.css";
+import AuthModal from "../components/AuthModal";
 
 function Profile() {
   const [user, setUser] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [error, setError] = useState(null);
+  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const navigate = useNavigate();
 
- // ✅ Загрузка избранных только из localStorage
-useEffect(() => {
-  const loadFavorites = () => {
-    const saved = JSON.parse(localStorage.getItem("favorites")) || [];
-    setFavorites(saved);
-  };
+  // Загрузка избранных из localStorage
+  useEffect(() => {
+    const loadFavorites = () => {
+      const saved = JSON.parse(localStorage.getItem("favorites")) || [];
+      setFavorites(saved);
+    };
 
-  loadFavorites();
-  window.addEventListener("storage", loadFavorites);
-  return () => window.removeEventListener("storage", loadFavorites);
-}, []);
+    loadFavorites();
+    window.addEventListener("storage", loadFavorites);
+    return () => window.removeEventListener("storage", loadFavorites);
+  }, []);
 
-useEffect(() => {
+  // Функция загрузки профиля с сервера
   const fetchProfile = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       console.log("Пользователь не авторизован");
-      navigate("/login");
+      setAuthModalOpen(true);
       return;
     }
 
@@ -36,40 +38,74 @@ useEffect(() => {
       const response = await axios.get("http://localhost:5000/api/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Данные профиля:", response.data);
       setUser(response.data);
     } catch (err) {
-      console.error("Ошибка при получении профиля:", err);
-      setError(err.message);
+      console.error("Ошибка при получении профиля:", err.response?.data || err.message);
+      if (err.response && err.response.status === 401) {
+        // Токен отсутствует, истёк или недействителен – открываем модалку авторизации
+        localStorage.removeItem("token");
+        setAuthModalOpen(true);
+      } else {
+        setError(err.message);
+      }
     }
   };
 
-  fetchProfile();
-}, [navigate]);
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
+  // Обработчик логина – отправляем запрос на сервер и возвращаем ответ
+  const handleLogin = async ({ username, password }) => {
+    try {
+      const response = await axios.post("http://localhost:5000/api/login", {
+        username,
+        password,
+      });
+      console.log("Ответ от логина:", response);
+      if (!response || !response.data || !response.data.token) {
+        throw new Error("Некорректный ответ от сервера при логине");
+      }
+      localStorage.setItem("token", response.data.token);
+      setAuthModalOpen(false);
+      fetchProfile(); // Повторная загрузка профиля после успешного входа
+      return response; // Возвращаем ответ для AuthModal
+    } catch (error) {
+      console.error("Ошибка логина:", error);
+      alert(error.response?.data?.message || error.message || "Ошибка при логине");
+      throw error;
+    }
+  };
 
+  // Обработчик регистрации – отправляем запрос на сервер и возвращаем ответ
+  const handleRegister = async ({ username, email, password }) => {
+    try {
+      const response = await axios.post("http://localhost:5000/api/register", {
+        username,
+        email,
+        password,
+      });
+      console.log("Ответ от регистрации:", response);
+      if (!response || !response.data || !response.data.token) {
+        throw new Error("Некорректный ответ от сервера при регистрации");
+      }
+      localStorage.setItem("token", response.data.token);
+      setAuthModalOpen(false);
+      fetchProfile(); // Загружаем профиль после регистрации
+      return response; // Возвращаем ответ для AuthModal
+    } catch (error) {
+      console.error("Ошибка регистрации:", error);
+      alert(error.response?.data?.error || error.message || "Ошибка при регистрации");
+      throw error;
+    }
+  };
+
+  // Выход из аккаунта
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/");
+    setUser(null);
+    setAuthModalOpen(true);
   };
-
-  if (error) return <p>Ошибка: {error}</p>;
-  if (!user) return <p>Загрузка...</p>;
-
-  axios.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401 && error.response?.data?.expired) {
-      alert("Сессия истекла, пожалуйста, войдите снова.");
-      localStorage.removeItem("token"); // Удаляем старый токен
-      window.location.href = "/login"; // Перенаправляем на авторизацию
-    }
-    return Promise.reject(error);
-  }
-);
-
-
 
   return (
     <div className="profile">
@@ -77,21 +113,36 @@ useEffect(() => {
       <div className="profileInfo">
         <Breadcrumbs />
         <h2>Личный кабинет</h2>
-        <p>
-          <strong>Имя пользователя:</strong> {user.username || "Неизвестный пользователь"}
-        </p>
-        <p>
-          <strong>Email:</strong> {user.email || "Неизвестный email"}
-        </p>
-        <p>
-          <strong>Дата регистрации:</strong>{" "}
-          {user.createdAt ? new Date(user.createdAt).toLocaleString() : "Не указана"}
-        </p>
-        <button onClick={handleLogout}>Выйти</button>
-        <Link to="/favorites" className="favorites-btn">
-          Избранные объявления ({favorites.length})
-        </Link>
+        {user ? (
+          <>
+            <p>
+              <strong>Имя пользователя:</strong> {user.username || "Неизвестный пользователь"}
+            </p>
+            <p>
+              <strong>Email:</strong> {user.email || "Неизвестный email"}
+            </p>
+            <p>
+              <strong>Дата регистрации:</strong>{" "}
+              {user.createdAt ? new Date(user.createdAt).toLocaleString() : "Не указана"}
+            </p>
+            <button onClick={handleLogout}>Выйти</button>
+            <Link to="/favorites" className="favorites-btn">
+              Избранные объявления ({favorites.length})
+            </Link>
+          </>
+        ) : (
+          <p>Загрузка...</p>
+        )}
+        {error && <p className="error">Ошибка: {error}</p>}
       </div>
+
+      {/* Модальное окно авторизации */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+      />
     </div>
   );
 }
