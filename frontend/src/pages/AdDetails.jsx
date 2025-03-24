@@ -98,8 +98,6 @@ const AdDetails = () => {
     <div className="ad-details">
       <Header />
       <div className="Ad-information">
-        <Breadcrumbs category={ad.category} />
-        <h1>{ad.title || "Нет информации о названии"}</h1>
         <div className="ad-content">
           <div className="ad-images">
             {ad.images && ad.images.length > 0 ? (
@@ -141,7 +139,9 @@ const AdDetails = () => {
               <p>Фото отсутствуют.</p>
             )}
           </div>
+              <Breadcrumbs category={ad.category}/>
           <div className="ad-info">
+              <h1>{ad.title || "Нет информации о названии"}</h1>
             <div className="characteristics">
               <h2>Характеристики</h2>
               <p className="characteristics-item">

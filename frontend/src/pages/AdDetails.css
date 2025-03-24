@@ -1,6 +1,8 @@
 /* AdDetails.css */
 .ad-details {
   padding: 0; /* Убрали padding */
+  position: relative;
+  top: 200px;
 }
 
 .ad-content {
@@ -8,8 +10,6 @@
   flex-direction: column; /* Располагаем информацию в колонку */
   gap: 20px;
 }
-
-
 
 .ad-images {
   width: 100%;
@@ -90,6 +90,10 @@
   width: 100%;
   max-width: 600px; /* Ограничиваем ширину блока с информацией */
   margin: 0 auto; /* Центрируем блок с информацией */
+}
+
+.ad-info h2 {
+  color: black;
 }
 
 .characteristics {

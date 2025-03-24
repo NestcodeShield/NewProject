@@ -83,6 +83,11 @@ const User = mongoose.model("User", UserSchema);
 // --- ЭНДПОИНТЫ ---
 
 // Добавление объявления с изображениями
+app.get("/api/test", (req, res) => {
+  res.json({ message: "Сервер работает!" });
+});
+
+
 app.post("/api/ads", upload.array("images", 10), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {

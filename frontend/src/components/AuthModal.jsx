@@ -35,6 +35,9 @@ function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
   return (
     <div className="modal">
       <div className="modal-content">
+      <button onClick={onClose} className="close-button">
+        &times;
+      </button>
         <h2>{isRegister ? "Регистрация" : "Вход"}</h2>
         <form onSubmit={handleSubmit}>
           <input
@@ -65,7 +68,6 @@ function AuthModal({ isOpen, onClose, onLogin, onRegister }) {
         <p onClick={() => setIsRegister(!isRegister)} style={{ cursor: "pointer", color: "blue" }}>
           {isRegister ? "Уже есть аккаунт? Войти" : "Нет аккаунта? Зарегистрироваться"}
         </p>
-        <button onClick={onClose}>Закрыть</button>
       </div>
     </div>
   );
